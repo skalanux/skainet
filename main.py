@@ -7,11 +7,13 @@ from decoder import scan
 morse_queue = queue.Queue()
 command_queue = []
 
-def run_decoder():
-    scan_thread.start()
+#def run_decoder():
 
 def toggle_decoder():
-    command_queue.append('TOGGLE')
+    if scan_thread.is_alive():
+        command_queue.append('TOGGLE')
+    else:
+        scan_thread.start()
 
 
 scan_thread = threading.Thread(target=scan, args=(morse_queue,command_queue))
@@ -33,29 +35,23 @@ def clear_text(text_widget):
 
 
 def show():
-    # Crear una ventana de Tkinter
     root = tk.Tk()
     root.title("No tengo wifi")
-    root.geometry('800x600')  # Define el tamaño de la ventana (ancho x alto)
-    # Crear un Text widget
+    root.geometry('800x600')
+
     font_settings = ('Terminus', 36)
     text_widget = tk.Text(root, wrap='word', font=font_settings, bg='black', fg='green')
     text_widget.pack(expand=True, fill='both')
-    # Crear un botón para limpiar el Text widget
+    run_read_button = tk.Button(root, text="Start/Stop", command=lambda: toggle_decoder())
+    run_read_button.place(relx=0.4, rely=0.8, anchor='ne')  # Posicionar el botón en la esquina superior derecha
+
     clear_button = tk.Button(root, text="Clear", command=lambda: clear_text(text_widget))
-    clear_button.place(relx=1.0, rely=0.0, anchor='ne')  # Posicionar el botón en la esquina superior derecha
-    run_read_button = tk.Button(root, text="Run", command=lambda: run_decoder())
-    run_read_button.place(relx=1.0, rely=0.2, anchor='ne')  # Posicionar el botón en la esquina superior derecha
-    run_read_button = tk.Button(root, text="=Toggle Read", command=lambda: toggle_decoder())
-    run_read_button.place(relx=1.0, rely=0.3, anchor='ne')  # Posicionar el botón en la esquina superior derecha
+    clear_button.place(relx=0.7, rely=0.8, anchor='ne')  # Posicionar el botón en la esquina superior derecha
 
-
-    # Leer datos del queue y mostrarlos en el Text widget
     reader_thread = threading.Thread(target=worker, args=(morse_queue, text_widget))
     reader_thread.daemon = True
     reader_thread.start()
 
-    # Iniciar el loop principal de Tkinter
     root.mainloop()
    
 show()

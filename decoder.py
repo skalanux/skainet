@@ -8,7 +8,14 @@ import cv2
 from morse_equivs import equivs
 
 
-def is_light_on(frame, threshold=250, min_brightness_area=23500):
+INTERVAL_BETWEEN_WORDS = (13,20)
+INTERVAL_BETWEEN_SYMBOLS = (6,12)
+LIGHT_INTERVAL_DOT = (1,7)
+LIGHT_INTERVAL_DASH = (8,20)
+
+
+def _is_light_on(frame, threshold=250, min_brightness_area=23500):
+    """Check wether light is on or off."""
     # Convertir el frame a escala de grises
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
@@ -40,17 +47,11 @@ def show_queue(morse_queue):
 
 def scan(morse_queue, command_queue=None):
     """Scan camera."""
-    cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
+    cap = cv2.VideoCapture(0)
 
     cant_lights = 0
     cant_darks = 0
     symbols = ''
-
-    INTERVAL_BETWEEN_WORDS = (13,20) # OK
-    INTERVAL_BETWEEN_SYMBOLS = (6,12)
-
-    LIGHT_INTERVAL_DOT = (1,7)
-    LIGHT_INTERVAL_DASH = (8,20)
 
     print_space = False
     print_symbol = False
@@ -66,12 +67,12 @@ def scan(morse_queue, command_queue=None):
 
             if command=='TOGGLE':
                 if capture_code:
-                    logging.error("Stopping...")
+                    logging.debug("Stopping...")
                     capture_code = False
                     cap.release()
                     #cv2.destroyAllWindows()
                 else:
-                    logging.error("Starting...")
+                    logging.debug("Starting...")
                     cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
                     capture_code = True
 
@@ -83,7 +84,7 @@ def scan(morse_queue, command_queue=None):
         if not ret:
             break
         
-        light_on, bright_area, thresh = is_light_on(frame)
+        light_on, bright_area, thresh = _is_light_on(frame)
 
 
         print_space = False
