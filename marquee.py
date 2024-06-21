@@ -21,7 +21,8 @@ def main():
     root.title("FIFO Reader")
 
     # Crear un Text widget
-    text_widget = tk.Text(root, wrap='word')
+    font_settings = ('Operator Mono Lig', 36)
+    text_widget = tk.Text(root, wrap='word', font=font_settings, bg='black', fg='green')
     text_widget.pack(expand=True, fill='both')
 
     # Leer datos del FIFO y mostrarlos en el Text widget
