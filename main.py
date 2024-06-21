@@ -43,40 +43,56 @@ def print2(value):
     palabra+=value
     print(value)
 
+print_space = False
+print_symbol = False
+
 while True:
     ret, frame = cap.read()
     if not ret:
         break
     
     light_on, bright_area, thresh = is_light_on(frame)
-    
+
+
+    print_space = False
+    print_symbol = False
+
     if light_on:
         cant_lights+=1
         if cant_darks>0:
             if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
-                print(symbols, equivs.get(symbols))
-                print(" \\ ")
-                symbols=''
+                #print(symbols, equivs.get(symbols))
+                #print(" \\ ")
+                #symbols=''
+                print_space = True
+                print_symbol = True
             elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
                 #print(" , ")
-                print(symbols, equivs.get(symbols))
-                symbols=''
-            #print(f"Darks:{cant_darks}")
+                #print(symbols, equivs.get(symbols))
+                #symbols=''
+                print_symbol = True
+
         cant_darks=0
     else:
         cant_darks+=1
         if cant_lights>0:
             if cant_lights in range(*LIGHT_INTERVAL_DOT):
-                #print(".")
                 symbols+='.'
             elif cant_lights in range(*LIGHT_INTERVAL_DASH):
-                #print("_")
                 symbols+='-'
 
-
         cant_lights=0
-
    
+        if cant_darks > INTERVAL_BETWEEN_WORDS[1] and symbols:
+            print_symbol = True
+
+    if print_symbol:
+        print(symbols, equivs.get(symbols))
+        symbols=''
+    if print_space:
+        print(" \\ ")
+        symbols=''
+
     # Mostrar el frame original y el frame con el umbral aplicado
         #cv2.imshow("Frame", frame)
         #cv2.imshow("Threshold", thresh)
