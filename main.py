@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+from morse_equivs import equivs
 
 def is_light_on(frame, threshold=250, min_brightness_area=23500):
     # Convertir el frame a escala de grises
@@ -27,6 +28,22 @@ check_interval =  0.01 # Intervalo de tiempo para verificar el estado de la luz 
 
 cant_lights = 0
 cant_darks = 0
+symbols = ''
+
+palabra = ''
+
+INTERVAL_ON = ()
+INTERVAL_BETWEEN_WORDS = (14,20)
+INTERVAL_BETWEEN_SYMBOLS = (6,12)
+
+LIGHT_INTERVAL_DOT = (1,5)
+LIGHT_INTERVAL_DASH = (7,10)
+
+def print2(value):
+    global palabra
+    palabra+=value
+    print(value)
+
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -37,30 +54,69 @@ while True:
         light_on, bright_area, thresh = is_light_on(frame)
         last_checked_time = current_time
         
-        # Mostrar el estado de la luz
         if light_on:
             cant_lights+=1
             if cant_darks>0:
-                if cant_darks>=5:
-                    sym = '/'
-                    print(f" {sym}", end='')
-                cant_darks=0
+                if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
+                    print(" \\ ")
+                elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
+                    print(" , ")
+                    
+                #print(f"Darks:{cant_darks}")
+            cant_darks=0
         else:
             cant_darks+=1
             if cant_lights>0:
-                if cant_lights>10:
-                    sym = '_'
-                else:
-                    sym = '.'
-                print(f" {sym}", end='')
+                if cant_lights in range(*LIGHT_INTERVAL_DOT):
+                    print(".")
+                elif cant_lights in range(*LIGHT_INTERVAL_DASH):
+                    print("_")
+
+
             cant_lights=0
+
+        #if light_on:
+        #    if cant_darks>0:
+        #        print("darks",cant_darks)
+        #        cant_darks=0
+        #    cant_lights=+1
+        #else:
+        #    if cant_lights>0:
+        #        print("lights",cant_lights)
+        #        cant_lights=0
+        #    cant_darks=+1
+
+        # # Mostrar el estado de la luz
+        # if light_on:
+        #     cant_lights+=1
+        #     if cant_darks>0:
+        #         if cant_darks>=5:
+        #             sym = '/'
+        #             print2(f" {sym}")
+        #         print2(f" {cant_darks}")
+        #     cant_darks=0
+        # else:
+        #     cant_darks+=1
+        #     if cant_lights>0:
+        #         if cant_lights>10:
+        #             sym = '_'
+        #         else:
+        #             sym = '.'
+        #         symbols+=sym
+        #         print2(f" {sym}")
+        #         #letter = equivs.get(symbols)
+        #         #if letter is not None:
+        #         #    print(letter)
+        #         #    symbols=''
+        #     cant_lights=0
     
     # Mostrar el frame original y el frame con el umbral aplicado
-        cv2.imshow("Frame", frame)
-        cv2.imshow("Threshold", thresh)
+        #cv2.imshow("Frame", frame)
+        #cv2.imshow("Threshold", thresh)
         
     # Salir del loop si se presiona la tecla 'q'
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        print(palabra)
         break
 
 # Liberar el objeto de captura y cerrar todas las ventanas
