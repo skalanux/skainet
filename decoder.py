@@ -1,12 +1,11 @@
-import os
-import sys
+import logging
+import queue
+import threading
+import time
 
 import cv2
-import numpy as np
-import time
 from morse_equivs import equivs
 
-import logging
 
 def is_light_on(frame, threshold=250, min_brightness_area=23500):
     # Convertir el frame a escala de grises
@@ -25,28 +24,20 @@ def is_light_on(frame, threshold=250, min_brightness_area=23500):
     
     return light_on, bright_area, thresh
 
-def print2(value):
-    global palabra
-    palabra+=value
-    print(value)
 
-def write_to_fifo(char):
-    with open('myfifo', 'w') as fifo:
-        if char is not None:
-            fifo.write(char)
-            fifo.flush()  # Asegúrate de que los datos se escriban inmediatamente
-
-
-def write_to_queue(morse_queue, char):
+def _write_to_queue(morse_queue, char):
+    """Write results to queue, so it can be displayed on console."""
     morse_queue.put(char)
 
+def show_queue(morse_queue):
+    while True:
+
+        print(morse_queue.get(), end='', flush=True)
+        time.sleep(0.3)
 
 def scan(morse_queue):
-    # Capturar el video desde la cámara
+    """Scan camera."""
     cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
-
-    last_checked_time = time.time()
-    check_interval =  0.01 # Intervalo de tiempo para verificar el estado de la luz en segundos
 
     cant_lights = 0
     cant_darks = 0
@@ -61,7 +52,7 @@ def scan(morse_queue):
     print_space = False
     print_symbol = False
 
-    print("Decoding...")
+    logging.debug("Decoding...")
 
     while True:
         ret, frame = cap.read()
@@ -100,24 +91,28 @@ def scan(morse_queue):
 
         if print_symbol:
             logging.debug(f"{symbols}: {equivs.get(symbols)}")
-            #print(equivs.get(symbols))
             letter=equivs.get(symbols)
-            write_to_queue(morse_queue, letter)
+            _write_to_queue(morse_queue, letter)
             symbols=''
         if print_space:
-            #print(" \\ ")
-            #print(" ")
-            write_to_queue(morse_queue, ' ')
+            logging.debug(f"\\")
+            _write_to_queue(morse_queue, ' ')
             symbols=''
-        # Mostrar el frame original y el frame con el umbral aplicado
-            #cv2.imshow("Frame", frame)
-            #cv2.imshow("Threshold", thresh)
-            
-        # Salir del loop si se presiona la tecla 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+
+        # show original frame and threshold
+        #cv2.imshow("Frame", frame)
+        #cv2.imshow("Threshold", thresh)
 
     # Liberar el objeto de captura y cerrar todas las ventanas
     cap.release()
     cv2.destroyAllWindows()
 
+
+if __name__ == '__main__':
+    morse_queue = queue.Queue()
+    scan_thread = threading.Thread(target=show_queue, args=(morse_queue,))
+    scan_thread.daemon = True
+    scan_thread.start()
+    scan(morse_queue)
+
+    morse_queue.join()
