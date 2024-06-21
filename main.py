@@ -1,123 +1,62 @@
-import os
-import sys
-
-import cv2
-import numpy as np
+import queue
+import tkinter as tk
+import threading
 import time
-from morse_equivs import equivs
+from decoder import scan
 
-import logging
+morse_queue = queue.Queue()
 
-def is_light_on(frame, threshold=250, min_brightness_area=23500):
-    # Convertir el frame a escala de grises
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
-    # Aplicar un umbral para detectar las áreas brillantes
-    _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-    
-    # Encontrar los contornos de las áreas brillantes
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # Calcular el área total de las regiones brillantes
-    bright_area = sum(cv2.contourArea(contour) for contour in contours)
-    
-    # Determinar si la luz está encendida o apagada
-    light_on = bright_area > min_brightness_area
-    
-    return light_on, bright_area, thresh
+def run_decoder():
+    scan_thread.start()
 
-def print2(value):
-    global palabra
-    palabra+=value
-    print(value)
-
-def write_to_fifo(char):
-    with open('myfifo', 'w') as fifo:
-        if char is not None:
-            fifo.write(char)
-            fifo.flush()  # Asegúrate de que los datos se escriban inmediatamente
+def stop_decoder():
+    scan_thread.join()
 
 
-def write_to_queue(morse_queue, char):
-    morse_queue.put(char)
+scan_thread = threading.Thread(target=scan, args=(morse_queue,))
+scan_thread.daemon = True
 
 
-def scan(morse_queue):
-    # Capturar el video desde la cámara
-    cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
-
-    last_checked_time = time.time()
-    check_interval =  0.01 # Intervalo de tiempo para verificar el estado de la luz en segundos
-
-    cant_lights = 0
-    cant_darks = 0
-    symbols = ''
-
-    INTERVAL_BETWEEN_WORDS = (13,20) # OK
-    INTERVAL_BETWEEN_SYMBOLS = (6,12)
-
-    LIGHT_INTERVAL_DOT = (1,7)
-    LIGHT_INTERVAL_DASH = (8,20)
-
-    print_space = False
-    print_symbol = False
-
-    print("Decoding...")
-
+def worker(morse_queue, text_widget):
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        light_on, bright_area, thresh = is_light_on(frame)
+        item = morse_queue.get()
+
+        if item:
+            text_widget.insert(tk.END, item)
+            text_widget.see(tk.END)
+        morse_queue.task_done()
 
 
-        print_space = False
-        print_symbol = False
+def clear_text(text_widget):
+    text_widget.delete('1.0', tk.END)  # Borra todo el contenido del Text widget
 
-        if light_on:
-            cant_lights+=1
-            if cant_darks>0:
-                if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
-                    print_space = True
-                    print_symbol = True
-                elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
-                    print_symbol = True
 
-            cant_darks=0
-        else:
-            cant_darks+=1
-            if cant_lights>0:
-                if cant_lights in range(*LIGHT_INTERVAL_DOT):
-                    symbols+='.'
-                elif cant_lights in range(*LIGHT_INTERVAL_DASH):
-                    symbols+='-'
+def show():
+    # Crear una ventana de Tkinter
+    root = tk.Tk()
+    root.title("No tengo wifi")
+    root.geometry('800x600')  # Define el tamaño de la ventana (ancho x alto)
+    # Crear un Text widget
+    font_settings = ('Terminus', 36)
+    text_widget = tk.Text(root, wrap='word', font=font_settings, bg='black', fg='green')
+    text_widget.pack(expand=True, fill='both')
+    # Crear un botón para limpiar el Text widget
+    clear_button = tk.Button(root, text="Clear", command=lambda: clear_text(text_widget))
+    clear_button.place(relx=1.0, rely=0.0, anchor='ne')  # Posicionar el botón en la esquina superior derecha
+    run_read_button = tk.Button(root, text="Run", command=lambda: run_decoder())
+    run_read_button.place(relx=1.0, rely=0.2, anchor='ne')  # Posicionar el botón en la esquina superior derecha
+    run_read_button = tk.Button(root, text="Stop", command=lambda: stop_decoder())
+    run_read_button.place(relx=1.0, rely=0.3, anchor='ne')  # Posicionar el botón en la esquina superior derecha
 
-            cant_lights=0
-       
-            if cant_darks > INTERVAL_BETWEEN_WORDS[1] and symbols:
-                print_symbol = True
-                #keep_scanning = False
 
-        if print_symbol:
-            logging.debug(f"{symbols}: {equivs.get(symbols)}")
-            #print(equivs.get(symbols))
-            letter=equivs.get(symbols)
-            write_to_queue(morse_queue, letter)
-            symbols=''
-        if print_space:
-            #print(" \\ ")
-            #print(" ")
-            write_to_queue(morse_queue, ' ')
-            symbols=''
-        # Mostrar el frame original y el frame con el umbral aplicado
-            #cv2.imshow("Frame", frame)
-            #cv2.imshow("Threshold", thresh)
-            
-        # Salir del loop si se presiona la tecla 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    # Leer datos del queue y mostrarlos en el Text widget
+    reader_thread = threading.Thread(target=worker, args=(morse_queue, text_widget))
+    reader_thread.daemon = True
+    reader_thread.start()
 
-    # Liberar el objeto de captura y cerrar todas las ventanas
-    cap.release()
-    cv2.destroyAllWindows()
+    # Iniciar el loop principal de Tkinter
+    root.mainloop()
+   
+show()
 
+morse_queue.join()
