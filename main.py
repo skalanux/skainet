@@ -1,3 +1,6 @@
+import os
+import sys
+
 import cv2
 import numpy as np
 import time
@@ -43,10 +46,20 @@ def print2(value):
     palabra+=value
     print(value)
 
+def write_to_fifo(char):
+    with open('myfifo', 'w') as fifo:
+        if char is not None:
+            fifo.write(char)
+            fifo.flush()  # Asegúrate de que los datos se escriban inmediatamente
+
 print_space = False
 print_symbol = False
+keep_scanning = True
 
-while True:
+time.sleep(2)
+print("Decoding...")
+
+while keep_scanning:
     ret, frame = cap.read()
     if not ret:
         break
@@ -61,15 +74,9 @@ while True:
         cant_lights+=1
         if cant_darks>0:
             if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
-                #print(symbols, equivs.get(symbols))
-                #print(" \\ ")
-                #symbols=''
                 print_space = True
                 print_symbol = True
             elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
-                #print(" , ")
-                #print(symbols, equivs.get(symbols))
-                #symbols=''
                 print_symbol = True
 
         cant_darks=0
@@ -85,21 +92,28 @@ while True:
    
         if cant_darks > INTERVAL_BETWEEN_WORDS[1] and symbols:
             print_symbol = True
+            #keep_scanning = False
 
     if print_symbol:
-        print(symbols, equivs.get(symbols))
+        #print(symbols, equivs.get(symbols))
+        #print(equivs.get(symbols))
+        letter=equivs.get(symbols)
+        #sys.stdout.write(letter)
+        write_to_fifo(letter)
         symbols=''
     if print_space:
-        print(" \\ ")
+        #print(" \\ ")
+        #print(" ")
+        #sys.stdout.write(' ')
+        write_to_fifo(' ')
         symbols=''
-
+    #sys.stdout.flush()
     # Mostrar el frame original y el frame con el umbral aplicado
         #cv2.imshow("Frame", frame)
         #cv2.imshow("Threshold", thresh)
         
     # Salir del loop si se presiona la tecla 'q'
     if cv2.waitKey(1) & 0xFF == ord('q'):
-        print(palabra)
         break
 
 # Liberar el objeto de captura y cerrar todas las ventanas
