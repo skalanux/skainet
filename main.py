@@ -48,36 +48,33 @@ while True:
     if not ret:
         break
     
-    current_time = time.time()
-    if True: #current_time - last_checked_time >= check_interval:
-        light_on, bright_area, thresh = is_light_on(frame)
-        last_checked_time = current_time
-        
-        if light_on:
-            cant_lights+=1
-            if cant_darks>0:
-                if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
-                    print(symbols, equivs.get(symbols))
-                    print(" \\ ")
-                    symbols=''
-                elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
-                    #print(" , ")
-                    print(symbols, equivs.get(symbols))
-                    symbols=''
-                #print(f"Darks:{cant_darks}")
-            cant_darks=0
-        else:
-            cant_darks+=1
-            if cant_lights>0:
-                if cant_lights in range(*LIGHT_INTERVAL_DOT):
-                    #print(".")
-                    symbols+='.'
-                elif cant_lights in range(*LIGHT_INTERVAL_DASH):
-                    #print("_")
-                    symbols+='-'
+    light_on, bright_area, thresh = is_light_on(frame)
+    
+    if light_on:
+        cant_lights+=1
+        if cant_darks>0:
+            if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
+                print(symbols, equivs.get(symbols))
+                print(" \\ ")
+                symbols=''
+            elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
+                #print(" , ")
+                print(symbols, equivs.get(symbols))
+                symbols=''
+            #print(f"Darks:{cant_darks}")
+        cant_darks=0
+    else:
+        cant_darks+=1
+        if cant_lights>0:
+            if cant_lights in range(*LIGHT_INTERVAL_DOT):
+                #print(".")
+                symbols+='.'
+            elif cant_lights in range(*LIGHT_INTERVAL_DASH):
+                #print("_")
+                symbols+='-'
 
 
-            cant_lights=0
+        cant_lights=0
 
    
     # Mostrar el frame original y el frame con el umbral aplicado
