@@ -35,7 +35,7 @@ palabra = ''
 INTERVAL_BETWEEN_WORDS = (13,20) # OK
 INTERVAL_BETWEEN_SYMBOLS = (6,12)
 
-LIGHT_INTERVAL_DOT = (1,6)
+LIGHT_INTERVAL_DOT = (1,7)
 LIGHT_INTERVAL_DASH = (8,20)
 
 def print2(value):
@@ -49,7 +49,7 @@ while True:
         break
     
     current_time = time.time()
-    if current_time - last_checked_time >= check_interval:
+    if True: #current_time - last_checked_time >= check_interval:
         light_on, bright_area, thresh = is_light_on(frame)
         last_checked_time = current_time
         
@@ -57,6 +57,7 @@ while True:
             cant_lights+=1
             if cant_darks>0:
                 if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
+                    print(symbols, equivs.get(symbols))
                     print(" \\ ")
                     symbols=''
                 elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
