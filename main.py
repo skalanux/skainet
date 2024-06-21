@@ -32,12 +32,11 @@ symbols = ''
 
 palabra = ''
 
-INTERVAL_ON = ()
-INTERVAL_BETWEEN_WORDS = (14,20)
+INTERVAL_BETWEEN_WORDS = (14,20) # OK
 INTERVAL_BETWEEN_SYMBOLS = (6,12)
 
-LIGHT_INTERVAL_DOT = (1,5)
-LIGHT_INTERVAL_DASH = (7,10)
+LIGHT_INTERVAL_DOT = (1,6)
+LIGHT_INTERVAL_DASH = (8,20)
 
 def print2(value):
     global palabra
@@ -75,41 +74,7 @@ while True:
 
             cant_lights=0
 
-        #if light_on:
-        #    if cant_darks>0:
-        #        print("darks",cant_darks)
-        #        cant_darks=0
-        #    cant_lights=+1
-        #else:
-        #    if cant_lights>0:
-        #        print("lights",cant_lights)
-        #        cant_lights=0
-        #    cant_darks=+1
-
-        # # Mostrar el estado de la luz
-        # if light_on:
-        #     cant_lights+=1
-        #     if cant_darks>0:
-        #         if cant_darks>=5:
-        #             sym = '/'
-        #             print2(f" {sym}")
-        #         print2(f" {cant_darks}")
-        #     cant_darks=0
-        # else:
-        #     cant_darks+=1
-        #     if cant_lights>0:
-        #         if cant_lights>10:
-        #             sym = '_'
-        #         else:
-        #             sym = '.'
-        #         symbols+=sym
-        #         print2(f" {sym}")
-        #         #letter = equivs.get(symbols)
-        #         #if letter is not None:
-        #         #    print(letter)
-        #         #    symbols=''
-        #     cant_lights=0
-    
+   
     # Mostrar el frame original y el frame con el umbral aplicado
         #cv2.imshow("Frame", frame)
         #cv2.imshow("Threshold", thresh)
