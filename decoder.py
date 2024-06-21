@@ -4,6 +4,7 @@ import threading
 import time
 
 import cv2
+
 from morse_equivs import equivs
 
 
@@ -29,13 +30,15 @@ def _write_to_queue(morse_queue, char):
     """Write results to queue, so it can be displayed on console."""
     morse_queue.put(char)
 
+
 def show_queue(morse_queue):
     while True:
 
         print(morse_queue.get(), end='', flush=True)
         time.sleep(0.3)
 
-def scan(morse_queue):
+
+def scan(morse_queue, command_queue=None):
     """Scan camera."""
     cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
 
@@ -54,7 +57,28 @@ def scan(morse_queue):
 
     logging.debug("Decoding...")
 
+    capture_code = True
+
     while True:
+        if command_queue is not None and len(command_queue) > 0:
+
+            command = command_queue.pop()
+
+            if command=='TOGGLE':
+                if capture_code:
+                    logging.error("Stopping...")
+                    capture_code = False
+                    cap.release()
+                    #cv2.destroyAllWindows()
+                else:
+                    logging.error("Starting...")
+                    cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
+                    capture_code = True
+
+        if not capture_code:
+            time.sleep(1)
+            continue
+
         ret, frame = cap.read()
         if not ret:
             break
@@ -114,5 +138,4 @@ if __name__ == '__main__':
     scan_thread.daemon = True
     scan_thread.start()
     scan(morse_queue)
-
     morse_queue.join()

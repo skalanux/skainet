@@ -5,15 +5,16 @@ import time
 from decoder import scan
 
 morse_queue = queue.Queue()
+command_queue = []
 
 def run_decoder():
     scan_thread.start()
 
-def stop_decoder():
-    scan_thread.join()
+def toggle_decoder():
+    command_queue.append('TOGGLE')
 
 
-scan_thread = threading.Thread(target=scan, args=(morse_queue,))
+scan_thread = threading.Thread(target=scan, args=(morse_queue,command_queue))
 scan_thread.daemon = True
 
 
@@ -45,7 +46,7 @@ def show():
     clear_button.place(relx=1.0, rely=0.0, anchor='ne')  # Posicionar el botón en la esquina superior derecha
     run_read_button = tk.Button(root, text="Run", command=lambda: run_decoder())
     run_read_button.place(relx=1.0, rely=0.2, anchor='ne')  # Posicionar el botón en la esquina superior derecha
-    run_read_button = tk.Button(root, text="Stop", command=lambda: stop_decoder())
+    run_read_button = tk.Button(root, text="=Toggle Read", command=lambda: toggle_decoder())
     run_read_button.place(relx=1.0, rely=0.3, anchor='ne')  # Posicionar el botón en la esquina superior derecha
 
 
