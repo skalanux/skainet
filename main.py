@@ -32,7 +32,7 @@ symbols = ''
 
 palabra = ''
 
-INTERVAL_BETWEEN_WORDS = (14,20) # OK
+INTERVAL_BETWEEN_WORDS = (13,20) # OK
 INTERVAL_BETWEEN_SYMBOLS = (6,12)
 
 LIGHT_INTERVAL_DOT = (1,6)
@@ -58,18 +58,22 @@ while True:
             if cant_darks>0:
                 if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
                     print(" \\ ")
+                    symbols=''
                 elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
-                    print(" , ")
-                    
+                    #print(" , ")
+                    print(symbols, equivs.get(symbols))
+                    symbols=''
                 #print(f"Darks:{cant_darks}")
             cant_darks=0
         else:
             cant_darks+=1
             if cant_lights>0:
                 if cant_lights in range(*LIGHT_INTERVAL_DOT):
-                    print(".")
+                    #print(".")
+                    symbols+='.'
                 elif cant_lights in range(*LIGHT_INTERVAL_DASH):
-                    print("_")
+                    #print("_")
+                    symbols+='-'
 
 
             cant_lights=0
