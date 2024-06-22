@@ -4,7 +4,6 @@ import threading
 import time
 
 import cv2
-
 from morse_equivs import equivs
 
 
@@ -48,6 +47,8 @@ def show_queue(morse_queue):
 def scan(morse_queue, command_queue=None):
     """Scan camera."""
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
     cant_lights = 0
     cant_darks = 0
@@ -70,7 +71,6 @@ def scan(morse_queue, command_queue=None):
                     logging.debug("Stopping...")
                     capture_code = False
                     cap.release()
-                    #cv2.destroyAllWindows()
                 else:
                     logging.debug("Starting...")
                     cap = cv2.VideoCapture(0)  # Cambiar el índice si hay más de una cámara
