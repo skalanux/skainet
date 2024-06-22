@@ -36,7 +36,7 @@ while True:
         break
     
     current_time = time.time()
-    if True: #current_time - last_checked_time >= check_interval:
+    if True:
         light_on, bright_area, thresh = is_light_on(frame)
         delta_time = current_time - last_checked_time
         last_checked_time = current_time
