@@ -89,7 +89,6 @@ def scan(morse_queue, command_queue=None):
         light_on, bright_area, thresh = _is_light_on(frame)
 
         current_time = time.time()
-        delta_time = current_time - last_checked_time
         last_checked_time = current_time
 
         if light_on != light_prev:
@@ -99,7 +98,7 @@ def scan(morse_queue, command_queue=None):
                 detected_symbols = symbols
                 if cant_darks<40:
                     if cant_darks > 16:
-                        letter=equivs.get(detected_symbols, '*')
+                        letter=equivs.get(detected_symbols, '')
                         symbols = ''
                         letter=equivs.get(detected_symbols)
                         _write_to_queue(morse_queue, letter)
@@ -128,47 +127,6 @@ def scan(morse_queue, command_queue=None):
             letter=equivs.get(symbols)
             _write_to_queue(morse_queue, letter)
             symbols=''
-#        print_space = False
-#        print_symbol = False
-
-#        if light_on:
-#            cant_lights+=1
-#            if cant_darks>0:
-#                if cant_darks in range(*INTERVAL_BETWEEN_WORDS):
-#                    print_space = True
-#                    print_symbol = True
-#                elif cant_darks in range(*INTERVAL_BETWEEN_SYMBOLS):
-#                    print_symbol = True
-#
-#            cant_darks=0
-#        else:
-#            cant_darks+=1
-#            if cant_lights>0:
-#                if cant_lights in range(*LIGHT_INTERVAL_DOT):
-#                    symbols+='.'
-#                elif cant_lights in range(*LIGHT_INTERVAL_DASH):
-#                    symbols+='-'
-#
-#            cant_lights=0
-#       
-#            if cant_darks > INTERVAL_BETWEEN_WORDS[1] and symbols:
-#                print_symbol = True
-#                #keep_scanning = False
-#
-#        print(f"delta:{delta_time*1000}: light_on:{light_on}")
-#        if print_symbol:
-#            logging.debug(f"{symbols}: {equivs.get(symbols)}")
-#            letter=equivs.get(symbols)
-#            _write_to_queue(morse_queue, letter)
-#            symbols=''
-#        if print_space:
-#            logging.debug(f"\\")
-#            _write_to_queue(morse_queue, ' ')
-#            symbols=''
-#
-        # show original frame and threshold
-        #cv2.imshow("Frame", frame)
-        #cv2.imshow("Threshold", thresh)
 
     # Liberar el objeto de captura y cerrar todas las ventanas
     cap.release()
