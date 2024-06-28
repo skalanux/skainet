@@ -13,7 +13,7 @@ LIGHT_INTERVAL_DOT = (1,7)
 LIGHT_INTERVAL_DASH = (8,20)
 
 
-def _is_light_on(frame, threshold=250, min_brightness_area=23500):
+def _is_light_on(frame, threshold=250, min_brightness_area=500):
     """Check wether light is on or off."""
     # Convertir el frame a escala de grises
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
